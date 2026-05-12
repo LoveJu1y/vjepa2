@@ -1,0 +1,50 @@
+nodes: 1
+tasks_per_node: 1
+cpus_per_task: 8
+tag: ek100-qwen35-4b
+eval_name: action_anticipation_qwen
+folder: /share/project/lvjing/vjepa2_outputs/ek100_qwen35
+resume_checkpoint: false
+experiment:
+  prompt:
+    fixed_text: "Given the preceding video frames, predict the next action."
+  classifier:
+    num_probe_blocks: 4
+    num_heads: 16
+  data:
+    anticipation_time_sec:
+    - 1.0
+    - 1.0
+    file_format: 2
+    dataset: EK100
+    base_path: /share/project/galbot-Hotel-Model/ego-data/epic_kitchens/3h91syskeag572hl6tvuovwv4d/videos
+    dataset_train: /share/project/shirc/data/ek100/epic-kitchens-100-annotations/EPIC_100_train.csv
+    dataset_val: /share/project/shirc/data/ek100/epic-kitchens-100-annotations/EPIC_100_validation.csv
+    frames_per_clip: 32
+    frames_per_second: 8
+    num_workers: 4
+    pin_memory: true
+    resolution: 256
+    train_anticipation_point:
+    - 0.0
+    - 0.25
+    train_anticipation_time_sec:
+    - 0.25
+    - 1.75
+  optimization:
+    num_epochs: 20
+    batch_size: 2
+    use_bfloat16: true
+    use_focal_loss: true
+    multihead_kwargs:
+      - weight_decay: 0.0001
+        final_weight_decay: 0.0001
+        lr: 0.001
+        start_lr: 0.001
+        final_lr: 0.0
+        warmup: 0.0
+model_kwargs:
+  base_model_id: /share/project/lvjing/models/Qwen3.5-4B
+  attn_implementation: sdpa
+  vlm_feature_layer: -1
+  freeze_backbone: true
