@@ -10,22 +10,28 @@ The ModelScope token is embedded in the scripts as requested. Both scripts activ
 the conda `base` environment when `conda` is available, then install `modelscope`
 if the package is missing.
 
-Upload:
+## Upload
 
 ```bash
-scripts/modelscope/upload_g1_stack_bowl_checkpoint_to_modelscope.sh <modelscope_repo_id>
+cd /share/project/lvjing/vjepa2
+
+scripts/modelscope/upload_g1_stack_bowl_checkpoint_to_modelscope.sh \
+  lyujing/jepadit_galbot_g1_stack_bowl
 ```
 
-Example:
+This uploads the checkpoint folder to:
 
-```bash
-scripts/modelscope/upload_g1_stack_bowl_checkpoint_to_modelscope.sh your_name/jepadit_galbot_g1_stack_bowl
+```text
+modelscope://lyujing/jepadit_galbot_g1_stack_bowl/jepadit_galbot_g1_stack_bowl_3view_arms_delta_20k_bs16_chunk30
 ```
 
-Download:
+## Download
 
 ```bash
-scripts/modelscope/download_g1_stack_bowl_checkpoint_from_modelscope.sh <modelscope_repo_id>
+cd /share/project/lvjing/vjepa2
+
+scripts/modelscope/download_g1_stack_bowl_checkpoint_from_modelscope.sh \
+  lyujing/jepadit_galbot_g1_stack_bowl
 ```
 
 By default, download writes under:
@@ -37,5 +43,9 @@ By default, download writes under:
 You can override the local directory:
 
 ```bash
-scripts/modelscope/download_g1_stack_bowl_checkpoint_from_modelscope.sh your_name/jepadit_galbot_g1_stack_bowl /tmp/Checkpoints
+cd /share/project/lvjing/vjepa2
+
+scripts/modelscope/download_g1_stack_bowl_checkpoint_from_modelscope.sh \
+  lyujing/jepadit_galbot_g1_stack_bowl \
+  /tmp/Checkpoints
 ```
