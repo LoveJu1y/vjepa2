@@ -1,0 +1,102 @@
+run_id: jepadit_galbot_g1_stack_bowl_3view
+run_root_dir: playground/Checkpoints
+seed: 42
+trackers: [jsonl, wandb]
+wandb_entity: your_wandb_entity
+wandb_project: starvla_jepadit
+is_debug: false
+
+framework:
+  name: JEPADiT
+  jepa:
+    model_name: vjepa2_1_vit_gigantic_384
+    checkpoint_path: /share/project/lvjing/models/vjepa2_1/vjepa2_1_vitG_384.pt
+    checkpoint_key: encoder
+    img_size: 384
+    patch_size: 16
+    num_frames: 64
+    tubelet_size: 2
+    use_sdpa: true
+    use_rope: true
+    interpolate_rope: true
+    img_temporal_dim_size: 1
+    freeze_encoder: true
+    image_views: 3
+    multi_view_fusion: concat_tokens
+  action_model:
+    action_model_type: DiT-B
+    action_hidden_dim: 1024
+    hidden_size: 1024
+    add_pos_embed: true
+    max_seq_len: 1024
+    action_dim: 38
+    state_dim: 38
+    future_action_window_size: 29
+    action_horizon: 30
+    past_action_window_size: 0
+    repeated_diffusion_steps: 8
+    noise_beta_alpha: 1.5
+    noise_beta_beta: 1.0
+    noise_s: 0.999
+    num_timestep_buckets: 1000
+    num_inference_timesteps: 4
+    inference_seed: 0
+    num_target_vision_tokens: 32
+    diffusion_model_cfg:
+      cross_attention_dim: 1664
+      dropout: 0.2
+      final_dropout: true
+      interleave_self_attention: true
+      norm_type: ada_norm
+      num_layers: 16
+      output_dim: 1024
+      positional_embeddings: null
+  obs_image_size: [384, 384]
+
+datasets:
+  vla_data:
+    dataset_py: lerobot_datasets
+    data_root_dir: playground/Datasets/GALBOT_G1_DIEWAN
+    data_mix: galbot_stack_bowl
+    action_type: abs_qpos
+    action_mode: abs
+    sequential_step_sampling: false
+    include_state: false
+    default_image_resolution: [3, 384, 384]
+    per_device_batch_size: 16
+    load_all_data_for_training: true
+    obs: ["image_0", "image_1", "image_2"]
+    video_backend: torchvision_av
+
+trainer:
+  epochs: 100
+  max_train_steps: 15000
+  num_warmup_steps: 100
+  save_interval: 500
+  eval_interval: 100
+  learning_rate:
+    base: 2.5e-05
+    action_model: 1.0e-04
+  lr_scheduler_type: cosine_with_min_lr
+  scheduler_specific_kwargs:
+    min_lr: 1.0e-06
+  freeze_modules: "jepa_encoder"
+  loss_scale:
+    vla: 1.0
+  max_grad_norm: 1.0
+  warmup_ratio: 0.1
+  weight_decay: 0.0
+  logging_frequency: 10
+  gradient_clipping: 1.0
+  gradient_accumulation_steps: 1
+  optimizer:
+    name: AdamW
+    betas: [0.9, 0.95]
+    eps: 1.0e-08
+    weight_decay: 1.0e-08
+  save_format: pt
+  is_resume: false
+  resume_epoch: null
+  resume_step: null
+  enable_gradient_checkpointing: true
+  enable_mixed_precision_training: true
