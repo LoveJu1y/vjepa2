@@ -53,6 +53,10 @@ from starVLA.dataloader.gr00t_lerobot.schema import (
 )
 from starVLA.dataloader.gr00t_lerobot.transform import ComposedModalityTransform
 from starVLA.dataloader.gr00t_lerobot.video import get_all_frames, get_frames_by_timestamps
+from starVLA.dataloader.gr00t_lerobot.galbot_arms import (
+    galbot_prepare_arms_action,
+    galbot_prepare_arms_state,
+)
 
 # LeRobot v2.0 dataset file names
 LE_ROBOT_MODALITY_FILENAME = "meta/modality.json"
@@ -86,6 +90,17 @@ def _wait_for_cache(
         time.sleep(poll_interval_seconds)
 
 
+def _stats_from_array(values: np.ndarray) -> dict:
+    return {
+        "mean": np.mean(values, axis=0).tolist(),
+        "std": np.std(values, axis=0).tolist(),
+        "min": np.min(values, axis=0).tolist(),
+        "max": np.max(values, axis=0).tolist(),
+        "q01": np.quantile(values, 0.01, axis=0).tolist(),
+        "q99": np.quantile(values, 0.99, axis=0).tolist(),
+    }
+
+
 def calculate_dataset_statistics(parquet_paths: list[Path]) -> dict:
     """Calculate the dataset statistics of all columns for a list of parquet files."""
     # Dataset statistics
@@ -116,15 +131,77 @@ def calculate_dataset_statistics(parquet_paths: list[Path]) -> dict:
             print(f"Warning: Failed to process modality {le_modality} due to error: {e}")
             continue
 
-        dataset_statistics[le_modality] = {
-            "mean": np.mean(np_data, axis=0).tolist(),
-            "std": np.std(np_data, axis=0).tolist(),
-            "min": np.min(np_data, axis=0).tolist(),
-            "max": np.max(np_data, axis=0).tolist(),
-            "q01": np.quantile(np_data, 0.01, axis=0).tolist(),
-            "q99": np.quantile(np_data, 0.99, axis=0).tolist(),
-        }
+        dataset_statistics[le_modality] = _stats_from_array(np_data)
     return dataset_statistics
+
+
+def calculate_galbot_arms_delta_statistics(
+    parquet_paths: list[Path],
+    action_indices: list[int],
+    state_indices: list[int],
+) -> dict:
+    """Calculate OpenPI-aligned Galbot arms stats after reorder, gripper scaling, and joint deltas."""
+
+    if state_indices != [0]:
+        raise ValueError(f"Galbot arms-delta stats expect state_indices=[0], got {state_indices}")
+
+    all_state: list[np.ndarray] = []
+    all_action: list[np.ndarray] = []
+
+    for parquet_path in tqdm(sorted(list(parquet_paths)), desc="Collecting Galbot arms-delta stats"):
+        data = pd.read_parquet(parquet_path)
+        if "observation.state" not in data.columns:
+            raise ValueError(f"observation.state not found in {parquet_path}")
+
+        state_matrix = np.stack(data["observation.state"]).astype(np.float32)[:, :16]
+        trajectory_length = len(state_matrix)
+        for base_index in range(trajectory_length):
+            current_state = state_matrix[base_index]
+            step_indices = np.asarray(action_indices) + base_index
+            step_indices = np.clip(step_indices, 0, trajectory_length - 1)
+            future_states = state_matrix[step_indices]
+
+            all_state.append(galbot_prepare_arms_state(current_state))
+            all_action.append(galbot_prepare_arms_action(future_states, current_state))
+
+    state_values = np.stack(all_state).astype(np.float32)
+    action_values = np.concatenate(all_action, axis=0).astype(np.float32)
+    stats = calculate_dataset_statistics(parquet_paths)
+    stats["galbot.state.arms"] = _stats_from_array(state_values)
+    stats["galbot.action.arms_future"] = _stats_from_array(action_values)
+    return stats
+
+
+def _stats_from_openpi_norm_stats(norm_stats_path: str | Path) -> dict[str, dict[str, list[float]]]:
+    """Load OpenPI Galbot norm_stats.json and convert it to StarVLA state/action statistics."""
+
+    norm_stats_path = Path(norm_stats_path)
+    with open(norm_stats_path, "r") as f:
+        payload = json.load(f)
+    norm_stats = payload.get("norm_stats", payload)
+    if "state" not in norm_stats or "actions" not in norm_stats:
+        raise ValueError(f"OpenPI norm stats must contain state/actions: {norm_stats_path}")
+
+    def _convert(src: dict) -> dict:
+        if "q01" not in src or "q99" not in src:
+            raise ValueError(f"OpenPI Galbot stats must contain q01/q99: {norm_stats_path}")
+        q01 = list(src["q01"])
+        q99 = list(src["q99"])
+        return {
+            "mean": list(src["mean"]),
+            "std": list(src["std"]),
+            # StarVLA's schema requires min/max. For OpenPI quantile-normalized
+            # Galbot runs, q01/q99 are the actual normalization bounds.
+            "min": q01,
+            "max": q99,
+            "q01": q01,
+            "q99": q99,
+        }
+
+    return {
+        "state.arms": _convert(norm_stats["state"]),
+        "action.arms_future": _convert(norm_stats["actions"]),
+    }
 
 
 def _normalize_action_mode(mode: str) -> str:
@@ -166,10 +243,14 @@ def _normalize_action_mode_state_map(action_mode_state_map: dict[str, str] | Non
 
 def _build_stats_cache_config(
     action_mode: str,
+    stats_transform: str | None = None,
 ) -> dict:
-    return {
+    config = {
         "mode": action_mode,
     }
+    if stats_transform:
+        config["stats_transform"] = stats_transform
+    return config
 
 
 def _invalidate_legacy_stats_cache(stats_path: Path, reason: str) -> None:
@@ -234,6 +315,7 @@ def _compute_statistics_for_mode(
     parquet_paths: list[Path],
     dataset_name: str,
     action_mode: str,
+    stats_transform: str | None,
     lerobot_modality_meta: "LeRobotModalityMetadata",
     action_keys_full: list[str],
     state_keys_full: list[str],
@@ -242,7 +324,16 @@ def _compute_statistics_for_mode(
     action_mode_apply_keys: list[str] | None,
     action_mode_state_map: dict[str, str] | None,
 ) -> dict:
-    print(f"[RANK 0] Calculating dataset statistics for {dataset_name} (mode={action_mode})")
+    print(f"[RANK 0] Calculating dataset statistics for {dataset_name} (mode={action_mode}, transform={stats_transform})")
+
+    if stats_transform == "galbot_arms_delta":
+        if action_indices is None or state_indices is None:
+            raise ValueError("Galbot arms-delta statistics require action_indices and state_indices.")
+        return calculate_galbot_arms_delta_statistics(
+            parquet_paths=parquet_paths,
+            action_indices=action_indices,
+            state_indices=state_indices,
+        )
 
     base_stats = calculate_dataset_statistics(parquet_paths)
 
@@ -287,6 +378,7 @@ def _load_or_compute_statistics(
     parquet_paths: list[Path],
     dataset_name: str,
     action_mode: str,
+    stats_transform: str | None,
     lerobot_modality_meta: "LeRobotModalityMetadata",
     action_keys_full: list[str],
     state_keys_full: list[str],
@@ -307,6 +399,7 @@ def _load_or_compute_statistics(
         parquet_paths=parquet_paths,
         dataset_name=dataset_name,
         action_mode=action_mode,
+        stats_transform=stats_transform,
         lerobot_modality_meta=lerobot_modality_meta,
         action_keys_full=action_keys_full,
         state_keys_full=state_keys_full,
@@ -800,6 +893,25 @@ class LeRobotSingleDataset(Dataset):
             return (not dist.is_initialized()) or dist.get_rank() == 0
 
         action_mode = _normalize_action_mode(self.data_cfg.get("action_mode", "abs") if self.data_cfg else "abs")
+        stats_transform = self.data_cfg.get("stats_transform", None) if self.data_cfg else None
+        openpi_norm_stats_path = self.data_cfg.get("openpi_norm_stats_path", None) if self.data_cfg else None
+
+        if openpi_norm_stats_path:
+            openpi_stats = _stats_from_openpi_norm_stats(openpi_norm_stats_path)
+            dataset_statistics = {"state": {}, "action": {}}
+            for subkey in simplified_modality_meta["state"]:
+                key = f"state.{subkey}"
+                if key in openpi_stats:
+                    dataset_statistics["state"][subkey] = openpi_stats[key]
+            for subkey in simplified_modality_meta["action"]:
+                key = f"action.{subkey}"
+                if key in openpi_stats:
+                    dataset_statistics["action"][subkey] = openpi_stats[key]
+            return DatasetMetadata(
+                statistics=dataset_statistics,  # type: ignore
+                modalities=simplified_modality_meta,  # type: ignore
+                embodiment_tag=embodiment_tag,
+            )
 
         stats_path = self.dataset_path / LE_ROBOT_STATS_FILENAME
         action_cfg = self.modality_configs.get("action")
@@ -818,6 +930,7 @@ class LeRobotSingleDataset(Dataset):
         )
         stats_cache_config = _build_stats_cache_config(
             action_mode=action_mode,
+            stats_transform=stats_transform,
         )
         parquet_files = list(self.dataset_path.glob(LE_ROBOT_DATA_FILENAME))
         parquet_files_filtered = [pf for pf in parquet_files if "episode_033675.parquet" not in pf.name]
@@ -829,6 +942,7 @@ class LeRobotSingleDataset(Dataset):
                 parquet_paths=parquet_files_filtered,
                 dataset_name=self.dataset_name,
                 action_mode=action_mode,
+                stats_transform=stats_transform,
                 lerobot_modality_meta=le_modality_meta,
                 action_keys_full=action_keys_full,
                 state_keys_full=state_keys_full,
@@ -869,11 +983,17 @@ class LeRobotSingleDataset(Dataset):
                 state_action_meta = le_modality_meta.get_key_meta(f"{our_modality}.{subkey}")
                 assert isinstance(state_action_meta, LeRobotStateActionMetadata)
                 le_modality = state_action_meta.original_key
+                indices = np.arange(
+                    state_action_meta.start,
+                    state_action_meta.end,
+                )
+                if stats_transform == "galbot_arms_delta" and our_modality == "state" and subkey == "arms":
+                    le_modality = "galbot.state.arms"
+                    indices = np.arange(0, state_action_meta.end - state_action_meta.start)
+                if stats_transform == "galbot_arms_delta" and our_modality == "action" and subkey == "arms_future":
+                    le_modality = "galbot.action.arms_future"
+                    indices = np.arange(0, state_action_meta.end - state_action_meta.start)
                 for stat_name in le_statistics[le_modality]:
-                    indices = np.arange(
-                        state_action_meta.start,
-                        state_action_meta.end,
-                    )
                     stat = np.array(le_statistics[le_modality][stat_name])
                     dataset_statistics[our_modality][subkey][stat_name] = stat[indices].tolist()
 

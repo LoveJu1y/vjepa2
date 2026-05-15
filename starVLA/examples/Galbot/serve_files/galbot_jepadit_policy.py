@@ -99,10 +99,13 @@ class JEPADiTGalbotPolicy:
 
         stats = json.loads(stats_path.read_text())
         action = stats["new_embodiment"]["action"]
+        low_key = "q01" if "q01" in action else "min"
+        high_key = "q99" if "q99" in action else "max"
         return {
-            "min": np.asarray(action["min"], dtype=np.float32),
-            "max": np.asarray(action["max"], dtype=np.float32),
-            "mask": np.asarray(action.get("mask", np.ones_like(action["min"])), dtype=bool),
+            "low": np.asarray(action[low_key], dtype=np.float32),
+            "high": np.asarray(action[high_key], dtype=np.float32),
+            "mask": np.asarray(action.get("mask", np.ones_like(action[low_key])), dtype=bool),
+            "range_keys": (low_key, high_key),
         }
 
     @staticmethod
@@ -123,6 +126,10 @@ class JEPADiTGalbotPolicy:
             return Image.open(io.BytesIO(arr.item())).convert("RGB")
         if arr.dtype != np.uint8:
             arr = np.clip(arr, 0, 255).astype(np.uint8)
+        # add code for openloop test - znb
+        # print(f"Decoded image with shape {arr.shape} and dtype {arr.dtype}")
+        # arr = arr.transpose(1, 2, 0)
+        # print(f"Decoded image with shape {arr.shape} and dtype {arr.dtype}")
         return Image.fromarray(arr).convert("RGB")
 
     @staticmethod
@@ -139,10 +146,10 @@ class JEPADiTGalbotPolicy:
 
     def _unnormalize_action(self, normalized: np.ndarray) -> np.ndarray:
         normalized = np.clip(normalized, -1.0, 1.0)
-        action_min = self.action_stats["min"]
-        action_max = self.action_stats["max"]
+        action_low = self.action_stats["low"]
+        action_high = self.action_stats["high"]
         mask = self.action_stats["mask"]
-        unnormalized = 0.5 * (normalized + 1.0) * (action_max - action_min) + action_min
+        unnormalized = 0.5 * (normalized + 1.0) * (action_high - action_low + 1e-6) + action_low
         return np.where(mask, unnormalized, normalized).astype(np.float32)
 
     @staticmethod
@@ -169,4 +176,3 @@ class JEPADiTGalbotPolicy:
         out26[:, 15:22] = out16[:, 8:15]
         out26[:, 22] = out16[:, 15]
         return out26
-

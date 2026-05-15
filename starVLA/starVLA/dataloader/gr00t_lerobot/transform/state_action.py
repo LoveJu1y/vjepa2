@@ -116,8 +116,9 @@ class Normalizer:
             normalized = torch.zeros_like(x)
 
             # Normalize the values where q01 != q99
-            # Formula: 2 * (x - q01) / (q99 - q01) - 1
-            normalized[..., mask] = (x[..., mask] - q01[..., mask]) / (q99[..., mask] - q01[..., mask])
+            # Formula: 2 * (x - q01) / (q99 - q01 + eps) - 1.
+            # The epsilon matches OpenPI's quantile normalization.
+            normalized[..., mask] = (x[..., mask] - q01[..., mask]) / (q99[..., mask] - q01[..., mask] + 1e-6)
             normalized[..., mask] = 2 * normalized[..., mask] - 1
 
             # Set the normalized values to the original values where q01 == q99
@@ -186,7 +187,7 @@ class Normalizer:
         if self.mode == "q99":
             q01 = self.statistics["q01"].to(x.dtype)
             q99 = self.statistics["q99"].to(x.dtype)
-            return (x + 1) / 2 * (q99 - q01) + q01
+            return (x + 1) / 2 * (q99 - q01 + 1e-6) + q01
         elif self.mode == "mean_std":
             mean = self.statistics["mean"].to(x.dtype)
             std = self.statistics["std"].to(x.dtype)

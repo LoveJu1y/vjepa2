@@ -1,4 +1,4 @@
-run_id: jepadit_galbot_book_0430_3view_arms_delta
+run_id: jepadit_galbot_book_0430_3view_openpi_stats_20k_bs16_chunk30
 run_root_dir: playground/Checkpoints
 seed: 42
 trackers: [jsonl, wandb]
@@ -60,6 +60,8 @@ datasets:
     data_mix: galbot_book_0430_arms_delta
     action_type: abs_qpos
     action_mode: abs
+    stats_transform: galbot_arms_delta
+    openpi_norm_stats_path: /share/project/zhangningboo/workspace/maomingming-openpi-validation-loss/openpi/assets/pi05_galbot_mmm_book/mmm_1990_1991_1992_1993_val_loss_filtered_processed/norm_stats.json
     sequential_step_sampling: false
     include_state: false
     default_image_resolution: [3, 384, 384]

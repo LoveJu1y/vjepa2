@@ -5,6 +5,10 @@ from typing import Any
 import numpy as np
 from starVLA.dataloader.gr00t_lerobot.datasets import ModalityConfig
 from starVLA.dataloader.gr00t_lerobot.embodiment_tags import EmbodimentTag
+from starVLA.dataloader.gr00t_lerobot.galbot_arms import (
+    galbot_prepare_arms_action,
+    galbot_prepare_arms_state,
+)
 from starVLA.dataloader.gr00t_lerobot.transform.base import ComposedModalityTransform, ModalityTransform
 from starVLA.dataloader.gr00t_lerobot.transform.state_action import StateActionToTensor, StateActionTransform
 
@@ -21,20 +25,10 @@ class GalbotArmsDeltaTransform(ModalityTransform):
         state = np.asarray(data["state.arms"])
         action = np.asarray(data["action.arms_future"])
 
-        # Raw order is right_arm, right_gripper, left_arm, left_gripper.
-        # OpenPI Galbot order is left_arm, left_gripper, right_arm, right_gripper.
-        reorder = np.array([8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7])
-        state = state[..., reorder]
-        action = action[..., reorder]
-
-        # Joint dimensions are deltas relative to current state; grippers stay absolute.
-        joint_indices = np.array([0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14])
         anchor = state[0] if state.ndim == 2 else state
-        action = action.copy()
-        action[..., joint_indices] = action[..., joint_indices] - anchor[..., joint_indices]
 
-        data["state.arms"] = state
-        data["action.arms_future"] = action
+        data["state.arms"] = galbot_prepare_arms_state(state)
+        data["action.arms_future"] = galbot_prepare_arms_action(action, anchor)
         return data
 
 
@@ -101,12 +95,12 @@ class GalbotG1ArmsDeltaDataConfig:
             StateActionToTensor(apply_to=self.state_keys),
             StateActionTransform(
                 apply_to=self.state_keys,
-                normalization_modes={"state.arms": "min_max"},
+                normalization_modes={"state.arms": "q99"},
             ),
             StateActionToTensor(apply_to=self.action_keys),
             StateActionTransform(
                 apply_to=self.action_keys,
-                normalization_modes={"action.arms_future": "min_max"},
+                normalization_modes={"action.arms_future": "q99"},
             ),
         ])
 

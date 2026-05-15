@@ -5,7 +5,7 @@ REPO_ROOT="${REPO_ROOT:-/share/project/lvjing/vjepa2}"
 STARVLA_ROOT="${STARVLA_ROOT:-${REPO_ROOT}/starVLA}"
 PYTHON_BIN="${PYTHON_BIN:-/share/project/lvjing/miniconda3/envs/starVLA_tc/bin/python}"
 
-RUN_DIR="${RUN_DIR:-${STARVLA_ROOT}/playground/Checkpoints/jepadit_galbot_book_0430_3view_arms_delta_20k_bs16_chunk30}"
+RUN_DIR="${RUN_DIR:-${STARVLA_ROOT}/playground/Checkpoints/jepadit_galbot_book_0430_3view_openpi_stats_20k_bs16_chunk30}"
 STEP="${STEP:-20000}"
 PORT="${PORT:-6688}"
 HOST="${HOST:-0.0.0.0}"
