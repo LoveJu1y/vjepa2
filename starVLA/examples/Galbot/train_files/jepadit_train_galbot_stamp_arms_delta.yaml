@@ -1,4 +1,4 @@
-run_id: jepadit_galbot_g1_stack_bowl_3view_openpi_stats_20k_bs4_chunk30
+run_id: jepadit_galbot_stamp_0503_3view_openpi_stats_50k_bs8_chunk30
 run_root_dir: playground/Checkpoints
 seed: 42
 trackers: [jsonl, wandb]
@@ -56,23 +56,23 @@ framework:
 datasets:
   vla_data:
     dataset_py: lerobot_datasets
-    data_root_dir: playground/Datasets/GALBOT_G1_DIEWAN_0502
-    data_mix: galbot_stack_bowl_arms_delta
+    data_root_dir: playground/Datasets/GALBOT_G1_STAMP_0503
+    data_mix: galbot_stamp_0503_arms_delta
     action_type: abs_qpos
     action_mode: abs
     stats_transform: galbot_arms_delta
-    openpi_norm_stats_path: /share/project/zhangningboo/workspace/maomingming-openpi-validation-loss/openpi/assets/pi05_galbot_mmm_diewan/4_diewan_0502/norm_stats.json
+    openpi_norm_stats_path: /share/project/zhangningboo/workspace/maomingming-openpi-validation-loss/openpi/assets/pi05_galbot_mmm_stamp_new/mmm_2027_2028_2029_2031_val_loss_filtered_processed/norm_stats.json
     sequential_step_sampling: false
     include_state: false
     default_image_resolution: [3, 384, 384]
-    per_device_batch_size: 4
+    per_device_batch_size: 8
     load_all_data_for_training: true
     obs: ["image_0", "image_1", "image_2"]
     video_backend: torchvision_av
 
 trainer:
   epochs: 100
-  max_train_steps: 20000
+  max_train_steps: 50000
   num_warmup_steps: 100
   save_interval: 5000
   eval_interval: 100

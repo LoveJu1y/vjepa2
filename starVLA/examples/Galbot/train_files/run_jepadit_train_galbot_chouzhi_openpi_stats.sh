@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+
+export CONFIG_YAML=${CONFIG_YAML:-./examples/Galbot/train_files/jepadit_train_galbot_chouzhi_arms_delta.yaml}
+export GALBOT_DATA_ROOT=${GALBOT_DATA_ROOT:-/share/project/lvjing/vjepa2/starVLA/playground/Datasets/GALBOT_G1_CHOUZHI_0506}
+export DATA_MIX=${DATA_MIX:-galbot_chouzhi_0506_arms_delta}
+export RUN_ID=${RUN_ID:-jepadit_galbot_chouzhi_0506_3view_openpi_stats_50k_bs8_chunk30}
+export NUM_PROCESSES=${NUM_PROCESSES:-8}
+export MAIN_PROCESS_PORT=${MAIN_PROCESS_PORT:-29682}
+export WANDB_MODE=${WANDB_MODE:-offline}
+
+bash "${SCRIPT_DIR}/run_jepadit_train_galbot.sh" "$@"

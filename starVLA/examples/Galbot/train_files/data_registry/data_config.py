@@ -150,4 +150,70 @@ DATASET_NAMED_MIXTURES = {
             "galbot_g1_arms_delta",
         ),
     ],
+    "galbot_stamp_0503_arms_delta": [
+        (
+            "Galbot_G1_Stamp_the_document_on_the_table_ then_return_the_stamp_to_its_original_position_3_2027",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Stamp_the_document_on_the_table_ then_return_the_stamp_to_its_original_position_3_2028",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Stamp_the_document_on_the_table_ then_return_the_stamp_to_its_original_position_3_2029",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Stamp_the_document_on_the_table_ then_return_the_stamp_to_its_original_position_3_2031",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+    ],
+    "galbot_chouzhi_0506_arms_delta": [
+        (
+            "Galbot_G1_Hold_the_tissue_box_with_one_hand_and_pull_out_a_tissue_with_the_other_3_2053",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Hold_the_tissue_box_with_one_hand_and_pull_out_a_tissue_with_the_other_3_2054",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Hold_the_tissue_box_with_one_hand_and_pull_out_a_tissue_with_the_other_3_2055",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Hold_the_tissue_box_with_one_hand_and_pull_out_a_tissue_with_the_other_3_2056",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+    ],
+    "galbot_sugar_0507_arms_delta": [
+        (
+            "Galbot_G1_Scoop_sugar_from_the_sugar_jar_with_a_spoon_pour_it_into_a_mug_with_water_and_stir_2_2063",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Scoop_sugar_from_the_sugar_jar_with_a_spoon_pour_it_into_a_mug_with_water_and_stir_2_2064",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Scoop_sugar_from_the_sugar_jar_with_a_spoon_pour_it_into_a_mug_with_water_and_stir_2_2065",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+        (
+            "Galbot_G1_Scoop_sugar_from_the_sugar_jar_with_a_spoon_pour_it_into_a_mug_with_water_and_stir_2_2066",
+            1.0,
+            "galbot_g1_arms_delta",
+        ),
+    ],
 }
