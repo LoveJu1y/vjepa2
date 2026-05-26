@@ -45,6 +45,7 @@ class QwenGR00TGalbotPolicy:
         self.model = self.model.to(self.device).eval()
 
         self.state_stats, self.action_stats = load_state_action_stats(stats_path, self.ckpt_path)
+        self.expect_state_input = bool(getattr(self.model.config.datasets.vla_data, "include_state", False))
         self.metadata = {
             "model": "QwenGR00T",
             "checkpoint": str(self.ckpt_path),
@@ -52,6 +53,7 @@ class QwenGR00TGalbotPolicy:
             "action_dim": 26,
             "wire_schema": "openpi_galbot_fullbody",
             "state_dim": 16,
+            "expects_state_input": self.expect_state_input,
         }
 
     def infer(self, obs: dict[str, Any]) -> dict[str, Any]:
@@ -65,8 +67,9 @@ class QwenGR00TGalbotPolicy:
                 decode_image(obs["observation/image"]),
             ],
             "lang": obs.get("prompt") or self.default_prompt or "",
-            "state": normalized_state[None, :],
         }
+        if self.expect_state_input:
+            example["state"] = normalized_state[None, :]
 
         output = self.model.predict_action([example])
         normalized = np.asarray(output["normalized_actions"], dtype=np.float32)

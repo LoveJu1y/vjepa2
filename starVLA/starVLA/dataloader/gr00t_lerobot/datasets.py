@@ -1759,6 +1759,16 @@ class LeRobotSingleDataset(Dataset):
         le_key = le_state_or_action_cfg[key].original_key
         if le_key is None:
             le_key = key
+        # For Galbot arms-delta training, match OpenPI semantics exactly:
+        # future "actions" are sourced from future observation.state frames,
+        # then converted to joint delta + gripper absolute in the transform.
+        if (
+            self.data_cfg is not None
+            and self.data_cfg.get("stats_transform", None) == "galbot_arms_delta"
+            and modality == "action"
+            and key == "arms_future"
+        ):
+            le_key = "observation.state"
         # Get the data array, shape: (T, D)
         assert self.curr_traj_data is not None, f"No data found for {trajectory_id=}"
         assert le_key in self.curr_traj_data.columns, f"No {le_key} found in {trajectory_id=}"

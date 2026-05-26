@@ -16,7 +16,9 @@ export NCCL_TIMEOUT=10000
 export NCCL_SOCKET_TIMEOUT_MS=360000
 
 ACCELERATE_BIN=${ACCELERATE_BIN:-/share/project/lvjing/miniconda3/envs/starVLA_tc/bin/accelerate}
-WANDB_MODE=${WANDB_MODE:-offline}
+export WANDB_MODE=${WANDB_MODE:-online}
+export WANDB_BASE_URL=${WANDB_BASE_URL:-https://api.bandw.top}
+export WANDB_API_KEY=${WANDB_API_KEY:-a8989c35c0573184da807b8a781d72936fe7e379}
 
 Framework_name=QwenGR00T
 config_yaml=${CONFIG_YAML:-./examples/Galbot/train_files/starvla_cotrain_galbot_book_qwengroot.yaml}
@@ -27,7 +29,7 @@ run_root_dir=${RUN_ROOT_DIR:-./playground/Checkpoints}
 run_id=${RUN_ID:-qwengroot_galbot_book_0430}
 num_processes=${NUM_PROCESSES:-8}
 main_process_port=${MAIN_PROCESS_PORT:-29701}
-freeze_module_list=${FREEZE_MODULES:-qwen_vl_interface}
+freeze_module_list=${FREEZE_MODULES-qwen_vl_interface}
 
 output_dir=${run_root_dir}/${run_id}
 mkdir -p "${output_dir}"

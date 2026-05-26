@@ -79,7 +79,6 @@ def normalize_state(state16: np.ndarray, state_stats: dict) -> np.ndarray:
 
 def unnormalize_action(normalized: np.ndarray, action_stats: dict) -> np.ndarray:
     normalized = np.asarray(normalized, dtype=np.float32)
-    normalized = np.clip(normalized, -1.0, 1.0)
     low_key = "q01" if "q01" in action_stats else "min"
     high_key = "q99" if "q99" in action_stats else "max"
     action_low = np.asarray(action_stats[low_key], dtype=np.float32)

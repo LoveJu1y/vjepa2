@@ -1,9 +1,9 @@
-run_id: jepadit_galbot_sugar_0507_3view_openpi_stats_50k_bs8_chunk30
+run_id: jepadit_galbot_sugar_0507_bs8_7230_ga2_lr1p5e5
 run_root_dir: playground/Checkpoints
 seed: 42
 trackers: [jsonl, wandb]
-wandb_entity: your_wandb_entity
-wandb_project: starvla_jepadit
+wandb_entity: lvj2114-beijing-academy-of-artificial-intelligence
+wandb_project: starvla_galbot_jepadit
 is_debug: false
 
 framework:
@@ -56,12 +56,12 @@ framework:
 datasets:
   vla_data:
     dataset_py: lerobot_datasets
-    data_root_dir: playground/Datasets/GALBOT_G1_SUGAR_0507
-    data_mix: galbot_sugar_0507_arms_delta
+    data_root_dir: playground/Datasets/GALBOT_G1_SUGAR_0507_FILTERED
+    data_mix: galbot_sugar_0507_filtered_arms_delta
     action_type: abs_qpos
     action_mode: abs
     stats_transform: galbot_arms_delta
-    openpi_norm_stats_path: /share/project/zhangningboo/workspace/maomingming-openpi-validation-loss/openpi/assets/pi05_galbot_mmm_sugar/10_sugar_0507_val_loss_filtered_processed/norm_stats.json
+    openpi_norm_stats_path: /share/project/lvjing/vjepa2/5tasks_norm_states_filtered/5tasks_norm_states_filtered/2026_05_23_sugar_0507_filtered_processed/norm_stats.json
     sequential_step_sampling: false
     include_state: false
     default_image_resolution: [3, 384, 384]
@@ -72,12 +72,12 @@ datasets:
 
 trainer:
   epochs: 100
-  max_train_steps: 50000
+  max_train_steps: 7230
   num_warmup_steps: 100
-  save_interval: 5000
+  save_interval: 723
   eval_interval: 100
   learning_rate:
-    base: 2.5e-05
+    base: 1.5e-05
     action_model: 1.0e-04
   lr_scheduler_type: cosine_with_min_lr
   scheduler_specific_kwargs:
@@ -90,7 +90,7 @@ trainer:
   weight_decay: 0.0
   logging_frequency: 10
   gradient_clipping: 1.0
-  gradient_accumulation_steps: 1
+  gradient_accumulation_steps: 2
   optimizer:
     name: AdamW
     betas: [0.9, 0.95]

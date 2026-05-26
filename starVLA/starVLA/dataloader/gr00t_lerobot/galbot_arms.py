@@ -5,7 +5,7 @@ import numpy as np
 GALBOT_ARMS_RAW_TO_OPENPI = np.array([8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7])
 GALBOT_ARMS_JOINT_INDICES = np.array([0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14])
 GALBOT_ARMS_GRIPPER_INDICES = np.array([7, 15])
-GALBOT_GRIPPER_SCALE = 1000.0
+GALBOT_GRIPPER_SCALE = 1.0
 
 
 def galbot_reorder_arms_to_openpi(values: np.ndarray) -> np.ndarray:
@@ -15,7 +15,7 @@ def galbot_reorder_arms_to_openpi(values: np.ndarray) -> np.ndarray:
 
 
 def galbot_grippers_to_meters(values: np.ndarray) -> np.ndarray:
-    """Convert raw Galbot gripper values from millimeter-like units to meters."""
+    """Apply the configured Galbot gripper scale."""
 
     values = values.copy()
     values[..., GALBOT_ARMS_GRIPPER_INDICES] = values[..., GALBOT_ARMS_GRIPPER_INDICES] / GALBOT_GRIPPER_SCALE
@@ -23,7 +23,7 @@ def galbot_grippers_to_meters(values: np.ndarray) -> np.ndarray:
 
 
 def galbot_prepare_arms_state(values: np.ndarray) -> np.ndarray:
-    """Prepare current state in the same layout and unit convention as OpenPI Galbot."""
+    """Prepare current state in the same layout and gripper scaling as training stats."""
 
     return galbot_grippers_to_meters(galbot_reorder_arms_to_openpi(values))
 

@@ -3,13 +3,13 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
-export CONFIG_YAML=${CONFIG_YAML:-./examples/Galbot/train_files/starvla_cotrain_galbot_diewan_qwengroot.yaml}
+export CONFIG_YAML=${CONFIG_YAML:-./examples/Galbot/train_files/jepadit_train_galbot_diewan_0502_arms_delta.yaml}
 export GALBOT_DATA_ROOT=${GALBOT_DATA_ROOT:-/share/project/lvjing/vjepa2/starVLA/playground/Datasets/GALBOT_G1_DIEWAN_0502_FILTERED}
 export DATA_MIX=${DATA_MIX:-galbot_diewan_0502_filtered_arms_delta}
-export RUN_ROOT_DIR=${RUN_ROOT_DIR:-./playground/Checkpoints_qwengroot_ga2_lr1p5e5}
-export RUN_ID=${RUN_ID:-qwengroot_galbot_diewan_0502_bs8_10190_ga2_lr1p5e5}
+export RUN_ROOT_DIR=${RUN_ROOT_DIR:-./playground/Checkpoints_jepadit_ga2_lr1p5e5}
+export RUN_ID=${RUN_ID:-jepadit_galbot_diewan_0502_bs8_10190_ga2_lr1p5e5}
 export NUM_PROCESSES=${NUM_PROCESSES:-8}
-export MAIN_PROCESS_PORT=${MAIN_PROCESS_PORT:-29702}
+export MAIN_PROCESS_PORT=${MAIN_PROCESS_PORT:-29684}
 export WANDB_MODE=${WANDB_MODE:-online}
 
-bash "${SCRIPT_DIR}/run_qwengroot_train_galbot.sh" "$@"
+bash "${SCRIPT_DIR}/run_jepadit_train_galbot.sh" "$@"

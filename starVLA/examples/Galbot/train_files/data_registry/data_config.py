@@ -216,4 +216,19 @@ DATASET_NAMED_MIXTURES = {
             "galbot_g1_arms_delta",
         ),
     ],
+    "galbot_book_0430_filtered_arms_delta": [
+        ("5_book_0430_filtered_processed", 1.0, "galbot_g1_arms_delta"),
+    ],
+    "galbot_diewan_0502_filtered_arms_delta": [
+        ("4_diewan_0502_filtered_processed", 1.0, "galbot_g1_arms_delta"),
+    ],
+    "galbot_chouzhi_0506_filtered_arms_delta": [
+        ("2_chouzhi_0506_filtered_processed", 1.0, "galbot_g1_arms_delta"),
+    ],
+    "galbot_stamp_0503_filtered_arms_delta": [
+        ("4_stamp_0503_filtered_processed", 1.0, "galbot_g1_arms_delta"),
+    ],
+    "galbot_sugar_0507_filtered_arms_delta": [
+        ("10_sugar_0507_filtered_processed", 1.0, "galbot_g1_arms_delta"),
+    ],
 }
