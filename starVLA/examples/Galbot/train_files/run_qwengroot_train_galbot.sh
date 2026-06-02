@@ -30,6 +30,10 @@ run_id=${RUN_ID:-qwengroot_galbot_book_0430}
 num_processes=${NUM_PROCESSES:-8}
 main_process_port=${MAIN_PROCESS_PORT:-29701}
 freeze_module_list=${FREEZE_MODULES-qwen_vl_interface}
+per_device_batch_size=${PER_DEVICE_BATCH_SIZE:-16}
+max_train_steps=${MAX_TRAIN_STEPS:-20000}
+include_state=${INCLUDE_STATE:-false}
+wandb_project=${WANDB_PROJECT:-starvla_galbot_qwengroot}
 
 output_dir=${run_root_dir}/${run_id}
 mkdir -p "${output_dir}"
@@ -45,7 +49,11 @@ WANDB_MODE="${WANDB_MODE}" "${ACCELERATE_BIN}" launch \
   --framework.qwenvl.base_vlm "${base_vlm}" \
   --datasets.vla_data.data_root_dir "${galbot_data_root}" \
   --datasets.vla_data.data_mix "${data_mix}" \
+  --datasets.vla_data.per_device_batch_size "${per_device_batch_size}" \
+  --datasets.vla_data.include_state "${include_state}" \
   --trainer.freeze_modules "${freeze_module_list}" \
+  --trainer.max_train_steps "${max_train_steps}" \
+  --wandb_project "${wandb_project}" \
   --run_root_dir "${run_root_dir}" \
   --run_id "${run_id}" \
   "$@"

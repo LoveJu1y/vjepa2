@@ -13,6 +13,9 @@ REPO_ROOT = GAL_REAL_ROOT.parent
 STARVLA_ROOT = REPO_ROOT / "starVLA"
 sys.path.insert(0, str(GAL_REAL_ROOT))
 sys.path.insert(0, str(STARVLA_ROOT))
+sys.path.insert(0, str("/share/project/lvjing/vjepa2"))
+
+print(f'STARVLA_ROOT: {STARVLA_ROOT}')
 
 from gal_real.server.serve_jepadit_policy import OpenPICompatiblePolicyServer  # noqa: E402
 from examples.Galbot.serve_files.galbot_qwengroot_policy import QwenGR00TGalbotPolicy  # noqa: E402

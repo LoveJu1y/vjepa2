@@ -21,6 +21,8 @@ framework:
     interpolate_rope: true
     img_temporal_dim_size: 1
     freeze_encoder: true
+    image_views: 2
+    multi_view_fusion: concat_tokens
   action_model:
     action_model_type: DiT-B
     action_hidden_dim: 1024

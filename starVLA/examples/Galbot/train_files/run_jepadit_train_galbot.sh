@@ -26,10 +26,14 @@ config_yaml=${CONFIG_YAML:-./examples/Galbot/train_files/jepadit_train_galbot.ya
 jepa_ckpt=${JEPA_CKPT:-/share/project/lvjing/models/vjepa2_1/vjepa2_1_vitG_384.pt}
 galbot_data_root=${GALBOT_DATA_ROOT:-/share/project/lvjing/vjepa2/starVLA/playground/Datasets/GALBOT_G1_DIEWAN_0502_FILTERED}
 data_mix=${DATA_MIX:-galbot_diewan_0502_filtered_arms_delta}
-run_root_dir=${RUN_ROOT_DIR:-./playground/Checkpoints_jepadit_ga2_lr1p5e5}
-run_id=${RUN_ID:-jepadit_galbot_diewan_0502_bs8_10190_ga2_lr1p5e5}
+run_root_dir=${RUN_ROOT_DIR:-./playground/Checkpoints_jepadit_bs16_step20000_withstate}
+run_id=${RUN_ID:-jepadit_galbot_diewan_0502_bs16_step20000_ga2_lr1p5e5_withstate}
 num_processes=${NUM_PROCESSES:-8}
 main_process_port=${MAIN_PROCESS_PORT:-29581}
+per_device_batch_size=${PER_DEVICE_BATCH_SIZE:-16}
+max_train_steps=${MAX_TRAIN_STEPS:-20000}
+include_state=${INCLUDE_STATE:-true}
+wandb_project=${WANDB_PROJECT:-starvla_galbot_jepadit_bs16_step20000_withstate}
 
 output_dir=${run_root_dir}/${run_id}
 mkdir -p "${output_dir}"
@@ -45,7 +49,11 @@ cp "$0" "${output_dir}/"
   --framework.jepa.checkpoint_path "${jepa_ckpt}" \
   --datasets.vla_data.data_root_dir "${galbot_data_root}" \
   --datasets.vla_data.data_mix "${data_mix}" \
+  --datasets.vla_data.per_device_batch_size "${per_device_batch_size}" \
+  --datasets.vla_data.include_state "${include_state}" \
   --trainer.freeze_modules "${freeze_module_list}" \
+  --trainer.max_train_steps "${max_train_steps}" \
+  --wandb_project "${wandb_project}" \
   --run_root_dir "${run_root_dir}" \
   --run_id "${run_id}" \
   "$@"

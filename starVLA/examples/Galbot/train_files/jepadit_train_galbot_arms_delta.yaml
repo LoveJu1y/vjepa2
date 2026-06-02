@@ -63,7 +63,7 @@ datasets:
     stats_transform: galbot_arms_delta
     openpi_norm_stats_path: /share/project/zhangningboo/workspace/maomingming-openpi-validation-loss/openpi/assets/pi05_galbot_mmm_diewan/4_diewan_0502/norm_stats.json
     sequential_step_sampling: false
-    include_state: false
+    include_state: true
     default_image_resolution: [3, 384, 384]
     per_device_batch_size: 4
     load_all_data_for_training: true
